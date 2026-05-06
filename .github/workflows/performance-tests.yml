@@ -1,0 +1,130 @@
+name: 🚀 k6 Performance Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test type to run'
+        required: true
+        default: 'load'
+        type: choice
+        options:
+          - load
+          - stress
+          - spike
+          - soak
+
+jobs:
+  load-test:
+    name: 📊 Load Test
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'load' || github.event.inputs.test_type == ''
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: 🏃 Run Load Test
+        run: |
+          mkdir -p reports
+          k6 run tests/load/load-test.js \
+            --out json=reports/load-results.json \
+            --summary-export reports/load-summary.json
+        env:
+          BASE_URL:       ${{ vars.BASE_URL || 'https://reqres.in/api' }}
+          ENVIRONMENT:    ci
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: reports/
+          retention-days: 30
+
+  stress-test:
+    name: 💪 Stress Test
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'stress' || github.event_name == 'schedule'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update && sudo apt-get install k6
+
+      - name: 💪 Run Stress Test
+        run: |
+          mkdir -p reports
+          k6 run tests/stress/stress-test.js \
+            --out json=reports/stress-results.json \
+            --summary-export reports/stress-summary.json
+        env:
+          BASE_URL:       ${{ vars.BASE_URL || 'https://reqres.in/api' }}
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stress-test-results
+          path: reports/
+          retention-days: 30
+
+  spike-test:
+    name: ⚡ Spike Test
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'spike'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔧 Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update && sudo apt-get install k6
+
+      - name: ⚡ Run Spike Test
+        run: |
+          mkdir -p reports
+          k6 run tests/spike/spike-test.js \
+            --out json=reports/spike-results.json \
+            --summary-export reports/spike-summary.json
+        env:
+          BASE_URL:       ${{ vars.BASE_URL || 'https://reqres.in/api' }}
+          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: spike-test-results
+          path: reports/
+          retention-days: 30
