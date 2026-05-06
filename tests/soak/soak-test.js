@@ -80,9 +80,9 @@ export default function () {
 }
 
 export function setup() {
-  console.log('🏊 Soak Test — Endurance run (30 minutes)');
+  console.log(' Soak Test — Endurance run (30 minutes)');
 }
 
 export function teardown() {
-  console.log('✅ Soak Test completed');
+  console.log(' Soak Test completed');
 }

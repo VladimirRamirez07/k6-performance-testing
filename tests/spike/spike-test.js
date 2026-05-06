@@ -50,9 +50,9 @@ export default function () {
 }
 
 export function setup() {
-  console.log('⚡ Spike Test — Simulating sudden traffic burst');
+  console.log(' Spike Test — Simulating sudden traffic burst');
 }
 
 export function teardown() {
-  console.log('✅ Spike Test done');
+  console.log(' Spike Test done');
 }

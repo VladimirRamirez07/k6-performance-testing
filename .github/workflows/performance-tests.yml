@@ -1,4 +1,4 @@
-name: 🚀 k6 Performance Tests
+name:  k6 Performance Tests
 
 on:
   push:
@@ -22,15 +22,15 @@ on:
 
 jobs:
   load-test:
-    name: 📊 Load Test
+    name:  Load Test
     runs-on: ubuntu-latest
     if: github.event.inputs.test_type == 'load' || github.event.inputs.test_type == ''
 
     steps:
-      - name: 📥 Checkout repository
+      - name:  Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Install k6
+      - name:  Install k6
         run: |
           sudo gpg -k
           sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
@@ -40,18 +40,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install k6
 
-      - name: 🏃 Run Load Test
+      - name:  Run Load Test
         run: |
           mkdir -p reports
           k6 run tests/load/load-test.js \
             --out json=reports/load-results.json \
             --summary-export reports/load-summary.json
         env:
-          BASE_URL:       ${{ vars.BASE_URL || 'https://reqres.in/api' }}
-          ENVIRONMENT:    ci
-          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+          BASE_URL:    https://jsonplaceholder.typicode.com
+          ENVIRONMENT: ci
 
-      - name: 📤 Upload Results
+      - name:  Upload Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -60,14 +59,14 @@ jobs:
           retention-days: 30
 
   stress-test:
-    name: 💪 Stress Test
+    name:  Stress Test
     runs-on: ubuntu-latest
     if: github.event.inputs.test_type == 'stress' || github.event_name == 'schedule'
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🔧 Install k6
+      - name:  Install k6
         run: |
           sudo gpg -k
           sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
@@ -76,17 +75,17 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update && sudo apt-get install k6
 
-      - name: 💪 Run Stress Test
+      - name:  Run Stress Test
         run: |
           mkdir -p reports
           k6 run tests/stress/stress-test.js \
             --out json=reports/stress-results.json \
             --summary-export reports/stress-summary.json
         env:
-          BASE_URL:       ${{ vars.BASE_URL || 'https://reqres.in/api' }}
-          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+          BASE_URL:    https://jsonplaceholder.typicode.com
+          ENVIRONMENT: ci
 
-      - name: 📤 Upload Results
+      - name:  Upload Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -95,14 +94,14 @@ jobs:
           retention-days: 30
 
   spike-test:
-    name: ⚡ Spike Test
+    name:  Spike Test
     runs-on: ubuntu-latest
     if: github.event.inputs.test_type == 'spike'
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: 🔧 Install k6
+      - name:  Install k6
         run: |
           sudo gpg -k
           sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
@@ -111,15 +110,15 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update && sudo apt-get install k6
 
-      - name: ⚡ Run Spike Test
+      - name:  Run Spike Test
         run: |
           mkdir -p reports
           k6 run tests/spike/spike-test.js \
             --out json=reports/spike-results.json \
             --summary-export reports/spike-summary.json
         env:
-          BASE_URL:       ${{ vars.BASE_URL || 'https://reqres.in/api' }}
-          REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
+          BASE_URL:    https://jsonplaceholder.typicode.com
+          ENVIRONMENT: ci
 
       - name: 📤 Upload Results
         uses: actions/upload-artifact@v4

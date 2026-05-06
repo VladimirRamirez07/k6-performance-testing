@@ -58,9 +58,9 @@ export default function () {
 }
 
 export function setup() {
-  console.log('💪 Stress Test — Finding breaking point');
+  console.log(' Stress Test — Finding breaking point');
 }
 
 export function teardown() {
-  console.log('✅ Stress Test completed');
+  console.log(' Stress Test completed');
 }
